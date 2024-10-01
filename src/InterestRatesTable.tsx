@@ -1,43 +1,29 @@
 import { useState } from 'react';
 import { useReactTable, getCoreRowModel, ColumnDef, flexRender, getSortedRowModel } from '@tanstack/react-table';
-import { InterestRateData } from './Interface/Data';
 import arrowUp from './assets/arrowUp.svg';
 import arrowDown from './assets/arrowDown.svg';
-import { useQuery } from '@tanstack/react-query';
-import { fetchInterestRatesConsumo } from './path-to-api-functions';
-import downloadCSV from './downloadToCsv';
+import { InterestRateData } from './Interface/Data';
 
 type SortingState = { id: string; desc: boolean }[];
 
-function InterestRatesTableConsumo() {
-  const { data, status } = useQuery({queryKey:['interestRatesConsumo'], queryFn:fetchInterestRatesConsumo});
+function InterestRatesTable({
+  columns,
+  data,
+  status,
+  setModalData,
+  setIsModalOpen,
+}: {
+  columns: ColumnDef<InterestRateData>[];
+  data: InterestRateData[] | undefined;
+  status: string;
+  setModalData: React.Dispatch<React.SetStateAction<Record<string, InterestRateData>>>;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const columns: ColumnDef<InterestRateData>[] = [
-    {
-      accessorKey: 'nombre_entidad',
-      header: 'Banco',
-    },
-    {
-      accessorKey: 'tipo_de_cr_dito',
-      header: 'Tipo de crédito',
-    },
-    {
-      accessorKey: 'producto_de_cr_dito',
-      header: 'Producto de crédito',
-    },
-    {
-      accessorKey: 'tasa_efectiva_promedio',
-      header: 'Interés promedio',
-      cell: (cell) => {
-        const roundedValue = Number(cell.getValue()).toFixed(2);
-        return `${roundedValue}%`;      
-      },
-    },
-  ];
-
   const table = useReactTable({
-    data: data || [], 
+    data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -54,10 +40,14 @@ function InterestRatesTableConsumo() {
     return <div>Error fetching data</div>;
   }
 
+  const handleModal = (rowData: Record<string, InterestRateData>) => {
+    setModalData(rowData);
+    setIsModalOpen(true);
+  };
+
 
   return (
     <div>
-      <button type="button" onClick={() => downloadCSV(table.getFilteredRowModel().rows, "testeo")}></button>
       <table>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -76,6 +66,12 @@ function InterestRatesTableConsumo() {
                   </th>
                 );
               })}
+              <th
+                key="actions"
+                onClick={undefined}
+              >
+                Acciones
+              </th>
             </tr>
           ))}
         </thead>
@@ -87,12 +83,18 @@ function InterestRatesTableConsumo() {
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
+              <td
+                onClick={() => handleModal(row.original)}
+              >
+                <button>Simular</button>
+              </td>
             </tr>
           ))}
+           
         </tbody>
       </table>
     </div>
   );
 }
 
-export default InterestRatesTableConsumo;
+export default InterestRatesTable;
