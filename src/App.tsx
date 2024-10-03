@@ -4,11 +4,10 @@ import { fetchInterestRatesConsumo, fetchInterestRatesVivienda } from './path-to
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import InterestRatesTable from './InterestRatesTable';
-import ModalComponent from './ModalComponent';
 import ModalInfo from './ModalInfo';
 
 function App() {
-  const [modalData, setModalData] = useState<Record<string, InterestRateData>>({});
+  const [modalData, setModalData] = useState< InterestRateData | object >({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const closeModalHandler = () => {
