@@ -1,34 +1,37 @@
 import { useState } from 'react';
 import { InterestRateData } from './Interface/Data';
-import { fetchInterestRatesConsumo, fetchInterestRatesVivienda } from './path-to-api-functions';
+import { ModalData } from './Interface/Data';
+import { fetchVehicleLoanInterestRates, fetchMortgageInterestRates, fetchPersonalLoanInterestRates } from './path-to-api-functions';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import InterestRatesTable from './InterestRatesTable';
 import ModalInfo from './ModalInfo';
+import { motion } from 'framer-motion';
 
 function App() {
-  const [modalData, setModalData] = useState< InterestRateData | object >({});
+  const [modalData, setModalData] = useState<ModalData | object>({
+    data: {},
+    type: '',
+    closeModal: () => {},
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('mortgage'); // Estado para manejar la pestaña activa
 
   const closeModalHandler = () => {
-    setIsModalOpen(false); // Establece el estado de cierre
+    setIsModalOpen(false);
     setTimeout(() => {
-      setModalData({}); // Limpiar los datos después de que la animación se complete
-    }, 300); // Espera el mismo tiempo que la duración de la animación
+      setModalData({});
+    }, 300);
   };
 
-  const columnsConsumo: ColumnDef<InterestRateData>[] = [
+  const vehicleLoanColumns: ColumnDef<InterestRateData>[] = [
     {
       accessorKey: 'nombre_entidad',
       header: 'Banco',
-    },
-    {
-      accessorKey: 'tipo_de_cr_dito',
-      header: 'Tipo de crédito',
     },
     {
       accessorKey: 'producto_de_cr_dito',
-      header: 'Producto de crédito',
+      header: 'Tipo de crédito',
     },
     {
       accessorKey: 'tasa_efectiva_promedio',
@@ -40,9 +43,38 @@ function App() {
     },
   ];
 
-  const { data: dataConsumo, status: statusConsumo } = useQuery({ queryKey: ['interestRatesConsumo'], queryFn: fetchInterestRatesConsumo });
+  const { data: vehicleLoanData, status: vehicleLoanStatus } = useQuery({
+    queryKey: ['interestRatesConsumo'],
+    queryFn: fetchVehicleLoanInterestRates,
+  });
 
-  const columnsVivienda: ColumnDef<InterestRateData>[] = [
+
+
+  const personalLoanColumns: ColumnDef<InterestRateData>[] = [
+    {
+      accessorKey: 'nombre_entidad',
+      header: 'Banco',
+    },
+    {
+      accessorKey: 'producto_de_cr_dito',
+      header: 'Tipo de crédito',
+    },
+    {
+      accessorKey: 'tasa_efectiva_promedio',
+      header: 'Interés promedio',
+      cell: (cell) => {
+        const roundedValue = Number(cell.getValue()).toFixed(2);
+        return `${roundedValue}%`;
+      },
+    },
+  ];
+
+  const { data: personalLoanData, status: personalLoanStatus } = useQuery({
+    queryKey: ['interestPersonalLoanRates'],
+    queryFn: fetchPersonalLoanInterestRates,
+  });
+
+  const mortgageColumns: ColumnDef<InterestRateData>[] = [
     {
       accessorKey: 'nombre_entidad',
       header: 'Banco',
@@ -61,26 +93,87 @@ function App() {
     },
   ];
 
-  const { data, status } = useQuery({ queryKey: ['interestRatesVivienda'], queryFn: fetchInterestRatesVivienda });
+  const { data: mortageData, status: mortgageStatus } = useQuery({
+    queryKey: ['interestRatesVivienda'],
+    queryFn: fetchMortgageInterestRates,
+  });
+
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'mortgage':
+        return (
+          <InterestRatesTable
+            columns={mortgageColumns}
+            data={mortageData}
+            status={mortgageStatus}
+            setModalData={setModalData}
+            setIsModalOpen={setIsModalOpen}
+            dataType='mortgage'
+          />
+        );
+      case 'vehicle':
+        return (
+          <InterestRatesTable
+            columns={vehicleLoanColumns}
+            data={vehicleLoanData}
+            status={vehicleLoanStatus}
+            setModalData={setModalData}
+            setIsModalOpen={setIsModalOpen}
+            dataType='vehicle'
+          />
+        );
+      case 'personalLoan':
+        return (
+          <InterestRatesTable
+            columns={personalLoanColumns}
+            data={personalLoanData}
+            status={personalLoanStatus}
+            setModalData={setModalData}
+            setIsModalOpen={setIsModalOpen}
+            dataType='personal'
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
-      <div
-        className='general-container'
-      >
-        <div className='container-table'>
-          <h1>Tasas de Interés Vivienda</h1>
-          <InterestRatesTable columns={columnsVivienda} data={data} status={status} setModalData={setModalData} setIsModalOpen={setIsModalOpen} />
-        </div>
-        <div className='container-table'>
-          <h1>Tasas de Interés Consumo</h1>
-          <InterestRatesTable columns={columnsConsumo} data={dataConsumo} status={statusConsumo} setModalData={setModalData} setIsModalOpen={setIsModalOpen} />
-        </div>
+      <div className="tabs-container">
+        <button
+          className={`tab-button ${activeTab === 'mortgage' ? 'active' : ''}`}
+          onClick={() => setActiveTab('mortgage')}
+        >
+          Tasas de Vivienda
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'vehicle' ? 'active' : ''}`}
+          onClick={() => setActiveTab('vehicle')}
+        >
+          Tasas de Vehículo
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'personalLoan' ? 'active' : ''}`}
+          onClick={() => setActiveTab('personalLoan')}
+        >
+          Tasas de Libre Inversión
+        </button>
       </div>
 
-      {isModalOpen && (
-        <ModalInfo data={modalData} closeModal={closeModalHandler} />
-      )}
+      <motion.div
+        className='content-container'
+        key={activeTab}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3 }}
+      >
+        {renderActiveTab()}
+      </motion.div>
+
+      {isModalOpen && <ModalInfo data={modalData} closeModal={closeModalHandler} />}
     </>
   );
 }
