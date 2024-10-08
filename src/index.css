@@ -161,6 +161,7 @@ tr:hover {
 
 .tab-button:hover {
     color: #06478d;
+    background-color: transparent;
 }
 
 .general-container {
