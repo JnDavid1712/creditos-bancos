@@ -1,0 +1,29 @@
+.faq {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .faq-item {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+  }
+  
+  .faq-title {
+    background-color: #f7f7f7;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .faq-title:hover {
+    background-color: #e6e6e6;
+  }
+  
+  .faq-content {
+    padding: 10px 20px;
+    background-color: #fff;
+  }
+  
