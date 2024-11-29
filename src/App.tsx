@@ -19,7 +19,7 @@ function App() {
   const [modalData, setModalData] = useState<ModalData | object>({
     data: {},
     type: '',
-    closeModal: () => {},
+    closeModal: () => { },
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('mortgage'); // Estado para manejar la pestaña activa
@@ -226,44 +226,60 @@ function App() {
     },
   ]);
 
+// guardar en una variable el ultimo dia del mes anterior
+  const today = new Date();
+  const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+  const lastDayString = lastDay.toISOString().split('T')[0];
+
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'mortgage':
         return (
-          <InterestRatesTable
-            columns={mortgageColumns}
-            data={mortageData}
-            status={mortgageStatus}
-            setModalData={setModalData}
-            setIsModalOpen={setIsModalOpen}
-            dataType='mortgage'
-          />
+          <div className='container--content'>
+            <p> Fecha de corte de la información: {lastDayString}</p>
+            <InterestRatesTable
+              columns={mortgageColumns}
+              data={mortageData}
+              status={mortgageStatus}
+              setModalData={setModalData}
+              setIsModalOpen={setIsModalOpen}
+              dataType='mortgage'
+            />
+
+          </div>
         );
       case 'vehicle':
         return (
-          <InterestRatesTable
-            columns={vehicleLoanColumns}
-            data={vehicleLoanData}
-            status={vehicleLoanStatus}
-            setModalData={setModalData}
-            setIsModalOpen={setIsModalOpen}
-            dataType='vehicle'
-          />
+          <div className='container--content'>
+            <p> Fecha de corte de la información: {lastDayString} </p>
+            <InterestRatesTable
+              columns={vehicleLoanColumns}
+              data={vehicleLoanData}
+              status={vehicleLoanStatus}
+              setModalData={setModalData}
+              setIsModalOpen={setIsModalOpen}
+              dataType='vehicle'
+            />
+          </div>
         );
       case 'personalLoan':
         return (
-          <InterestRatesTable
-            columns={personalLoanColumns}
-            data={personalLoanData}
-            status={personalLoanStatus}
-            setModalData={setModalData}
-            setIsModalOpen={setIsModalOpen}
-            dataType='personal'
-          />
+          <div className='container--content'>
+            <p> Fecha de corte de la información: {lastDayString} </p>
+            <InterestRatesTable
+              columns={personalLoanColumns}
+              data={personalLoanData}
+              status={personalLoanStatus}
+              setModalData={setModalData}
+              setIsModalOpen={setIsModalOpen}
+              dataType='personal'
+            />
+          </div>
         );
       case 'concepts':
-        return(
-          <Faq 
+        return (
+          <Faq
             data={dataFaq}
             setData={setDataFaq}
           />
@@ -274,7 +290,7 @@ function App() {
   };
 
   return (
-    <>
+    <div className='general-container'>
       <div className="tabs-container">
         <button
           className={`tab-button ${activeTab === 'mortgage' ? 'active' : ''}`}
@@ -303,7 +319,7 @@ function App() {
       </div>
 
       <motion.div
-        className='content-container'
+        className='container'
         key={activeTab}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -314,7 +330,7 @@ function App() {
       </motion.div>
 
       {isModalOpen && <ModalInfo data={modalData} closeModal={closeModalHandler} />}
-    </>
+    </div>
   );
 }
 
